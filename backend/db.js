@@ -7,12 +7,9 @@ const db = mysql.createConnection({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-
   ssl: {
     rejectUnauthorized: false
-  },
-
-  connectTimeout: 20000 // 👈 ADD THIS (VERY IMPORTANT)
+  }
 });
 
 db.connect((error) => {
@@ -20,6 +17,7 @@ db.connect((error) => {
     console.error("Database connection failed:", error);
     return;
   }
+
   console.log("MySQL connected successfully");
 });
 
