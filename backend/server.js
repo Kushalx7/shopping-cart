@@ -14,12 +14,23 @@ const uploadRoutes = require("./routes/uploads");
 
 const app = express();
 
+// Allowed frontend URLs
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+  "https://shopping-cart-gamma-tawny.vercel.app",
+  "https://shopping-cart-pld937i8k-kushalx7s-projects.vercel.app"
+].filter(Boolean);
+
 // Middlewares
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    process.env.FRONTEND_URL
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
