@@ -12,12 +12,20 @@ const orderRoutes = require("./routes/orders");
 const profileRoutes = require("./routes/profile");
 const uploadRoutes = require("./routes/uploads");
 
-
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    process.env.FRONTEND_URL
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
+
+// Static uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
@@ -38,6 +46,7 @@ app.get("/", (req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR:", err);
+
   res.status(500).json({
     message: "Something went wrong",
     error: err.message
