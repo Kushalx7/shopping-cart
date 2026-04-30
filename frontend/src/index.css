@@ -275,3 +275,21 @@ td { color: var(--heading); }
   font-weight: 700;
   font-size: .92rem;
 }
+.photo-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.profile-avatar img {
+  image-rendering: auto;
+}
+
+.profile-avatar.tiny {
+  width: 34px;
+  height: 34px;
+}

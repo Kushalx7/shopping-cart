@@ -1,14 +1,29 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { getUser, imageSrc } from '../utils';
 
 function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-  const user = getUser();
+
+  const [user, setUser] = useState(getUser());
+
+  useEffect(() => {
+    const syncUser = () => setUser(getUser());
+
+    window.addEventListener('storage', syncUser);
+    window.addEventListener('user-updated', syncUser);
+
+    return () => {
+      window.removeEventListener('storage', syncUser);
+      window.removeEventListener('user-updated', syncUser);
+    };
+  }, []);
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setUser(null);
     navigate('/login');
   };
 
@@ -26,11 +41,17 @@ function Navbar() {
         <div className="nav-links">
           <NavLink to="/">Products</NavLink>
           <NavLink to="/cart">Cart</NavLink>
+
           {token && <NavLink to="/orders">Orders</NavLink>}
           {token && <NavLink to="/profile">Profile</NavLink>}
+
           {user?.role === 'admin' && <NavLink to="/admin">Admin</NavLink>}
-          {user?.role === 'shop_owner' && <NavLink to="/shop-owner">Seller</NavLink>}
-          {token && user?.role === 'user' && <NavLink to="/user">Dashboard</NavLink>}
+          {user?.role === 'shop_owner' && (
+            <NavLink to="/shop-owner">Seller</NavLink>
+          )}
+          {token && user?.role === 'user' && (
+            <NavLink to="/user">Dashboard</NavLink>
+          )}
         </div>
 
         <div className="nav-actions">
@@ -56,6 +77,7 @@ function Navbar() {
                     user?.full_name?.charAt(0) || 'A'
                   )}
                 </span>
+
                 {user?.full_name || 'Account'}
               </Link>
 

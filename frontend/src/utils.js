@@ -26,3 +26,14 @@ export const imageSrc = (path) => {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   return `http://localhost:5000${path}`;
 };
+export const saveUser = (user) => {
+  localStorage.setItem('user', JSON.stringify(user));
+  window.dispatchEvent(new Event('user-updated'));
+};
+
+export const imageSrc = (path) => {
+  if (!path) return '';
+  if (path.startsWith('data:') || path.startsWith('blob:')) return path;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${API_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
+};

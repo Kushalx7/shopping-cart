@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/api';
-import { getUser, imageSrc } from '../utils';
+import { getUser, imageSrc, saveUser } from '../utils';
 
 function Profile() {
   const navigate = useNavigate();
   const storedUser = getUser();
   const userId = storedUser?.id;
+
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -15,6 +16,7 @@ function Profile() {
     currentPassword: '',
     newPassword: '',
   });
+
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -36,7 +38,9 @@ function Profile() {
           newPassword: '',
         });
       })
-      .catch((error) => setMessage(error.response?.data?.message || 'Failed to load profile'));
+      .catch((error) =>
+        setMessage(error.response?.data?.message || 'Failed to load profile')
+      );
   }, [userId, navigate]);
 
   useEffect(() => {
@@ -45,7 +49,8 @@ function Profile() {
     return () => clearTimeout(timer);
   }, [message]);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const uploadProfilePhoto = async (e) => {
     const file = e.target.files?.[0];
@@ -54,12 +59,18 @@ function Profile() {
     const data = new FormData();
     data.append('image', file);
     setUploading(true);
+    setMessage('');
 
     try {
       const res = await API.post('/upload/image', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setForm((prev) => ({ ...prev, profile_photo: res.data.image_url }));
+
+      setForm((prev) => ({
+        ...prev,
+        profile_photo: res.data.image_url,
+      }));
+
       setMessage('Profile photo uploaded. Click Save changes to keep it.');
     } catch (error) {
       setMessage(error.response?.data?.message || 'Photo upload failed');
@@ -75,14 +86,22 @@ function Profile() {
 
     try {
       const payload = { ...form };
+
       if (!payload.newPassword) {
         delete payload.currentPassword;
         delete payload.newPassword;
       }
 
       const res = await API.put(`/profile/${userId}`, payload);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      setForm((prev) => ({ ...prev, currentPassword: '', newPassword: '' }));
+
+      saveUser(res.data.user);
+
+      setForm((prev) => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+      }));
+
       setMessage(res.data.message || 'Profile updated successfully');
     } catch (error) {
       setMessage(error.response?.data?.message || 'Profile update failed');
@@ -103,8 +122,13 @@ function Profile() {
       <div className="profile-layout">
         <aside className="profile-summary">
           <div className="profile-avatar large">
-            {form.profile_photo ? <img src={imageSrc(form.profile_photo)} alt="Profile" /> : (form.full_name || 'U').charAt(0)}
+            {form.profile_photo ? (
+              <img src={imageSrc(form.profile_photo)} alt="Profile" />
+            ) : (
+              (form.full_name || 'U').charAt(0)
+            )}
           </div>
+
           <h2>{form.full_name || 'Your profile'}</h2>
           <p>{storedUser?.role?.replace('_', ' ')}</p>
           <span className="badge success">Real photo upload supported</span>
@@ -112,17 +136,90 @@ function Profile() {
 
         <form className="auth-card profile-form" onSubmit={handleSubmit}>
           <h2>Edit profile</h2>
+
           {message && <div className="alert toast-alert">{message}</div>}
-          <label>Full name<input required name="full_name" value={form.full_name} onChange={handleChange} /></label>
-          <label>Email<input required type="email" name="email" value={form.email} onChange={handleChange} /></label>
-          <label>Phone<input required name="phone" value={form.phone} onChange={handleChange} /></label>
-          <label>Profile photo<input type="file" accept="image/*" onChange={uploadProfilePhoto} /></label>
+
+          <label>
+            Full name
+            <input
+              required
+              name="full_name"
+              value={form.full_name}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            Email
+            <input
+              required
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            Phone
+            <input
+              required
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            Profile photo
+            <input type="file" accept="image/*" onChange={uploadProfilePhoto} />
+          </label>
+
           {uploading && <p className="muted">Uploading photo...</p>}
+
+          {form.profile_photo && (
+            <div className="photo-preview-row">
+              <span className="profile-avatar small">
+                <img
+                  src={imageSrc(form.profile_photo)}
+                  alt="Selected profile preview"
+                />
+              </span>
+              <span className="muted">
+                Preview shown here. Click Save changes to update the navbar icon.
+              </span>
+            </div>
+          )}
+
           <div className="form-divider" />
+
           <h3>Change password</h3>
-          <label>Current password<input type="password" name="currentPassword" placeholder="Required only when changing password" value={form.currentPassword} onChange={handleChange} /></label>
-          <label>New password<input type="password" name="newPassword" placeholder="NewPassword@123" value={form.newPassword} onChange={handleChange} /></label>
-          <button className="btn btn-primary full" disabled={loading} type="submit">{loading ? 'Saving...' : 'Save changes'}</button>
+
+          <label>
+            Current password
+            <input
+              type="password"
+              name="currentPassword"
+              placeholder="Required only when changing password"
+              value={form.currentPassword}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            New password
+            <input
+              type="password"
+              name="newPassword"
+              placeholder="NewPassword@123"
+              value={form.newPassword}
+              onChange={handleChange}
+            />
+          </label>
+
+          <button className="btn btn-primary full" disabled={loading} type="submit">
+            {loading ? 'Saving...' : 'Save changes'}
+          </button>
         </form>
       </div>
     </section>
