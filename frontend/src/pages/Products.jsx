@@ -12,6 +12,7 @@ function Products() {
 
   const fetchProducts = async () => {
     setLoading(true);
+
     try {
       const res = await API.get('/products');
       setProducts(res.data || []);
@@ -22,11 +23,9 @@ function Products() {
     }
   };
 
-  // ✅ FIXED addToCart
   const addToCart = async (productId) => {
     const token = localStorage.getItem('token');
 
-    // 🔴 stop if not logged in
     if (!token) {
       setMessage('Please login to add items to cart');
       return;
@@ -35,7 +34,7 @@ function Products() {
     try {
       const res = await API.post('/cart/add', {
         product_id: productId,
-        quantity: 1
+        quantity: 1,
       });
 
       setMessage(res.data.message || 'Added to cart');
@@ -54,6 +53,7 @@ function Products() {
 
   useEffect(() => {
     if (!message) return;
+
     const timer = setTimeout(() => setMessage(''), 3500);
     return () => clearTimeout(timer);
   }, [message]);
@@ -69,6 +69,7 @@ function Products() {
       if (sortBy === 'price-low') return Number(a.price) - Number(b.price);
       if (sortBy === 'price-high') return Number(b.price) - Number(a.price);
       if (sortBy === 'stock') return Number(b.stock || 0) - Number(a.stock || 0);
+
       return Number(b.id || 0) - Number(a.id || 0);
     });
   }, [products, query, sortBy]);
@@ -84,9 +85,14 @@ function Products() {
           <p className="hero-copy">
             Browse, compare, add to cart, and checkout with live stock protection.
           </p>
+
           <div className="hero-actions">
-            <a className="btn btn-primary" href="#catalog">Shop catalog</a>
-            <Link className="btn btn-ghost" to="/cart">View cart</Link>
+            <a className="btn btn-primary" href="#catalog">
+              Shop catalog
+            </a>
+            <Link className="btn btn-ghost" to="/cart">
+              View cart
+            </Link>
           </div>
         </div>
 
@@ -97,16 +103,11 @@ function Products() {
         </div>
       </div>
 
-      {/* ✅ Improved alert with login button */}
       {message && (
         <div className="alert toast-alert">
           {message}
           {!localStorage.getItem('token') && (
-            <Link
-              to="/login"
-              className="btn btn-primary"
-              style={{ marginLeft: '10px' }}
-            >
+            <Link to="/login" className="btn btn-primary" style={{ marginLeft: '10px' }}>
               Login
             </Link>
           )}
@@ -151,15 +152,16 @@ function Products() {
                 key={product.id}
               >
                 <div className="product-image">
-                  {product.image_url ? (
-                    <img src={imageSrc(product.image_url)} alt={product.name} />
-                  ) : (
-                    product.name?.charAt(0) || 'P'
-                  )}
+                  <img
+                    src={
+                      product.image_url
+                        ? imageSrc(product.image_url)
+                        : 'https://placehold.co/600x400?text=No+Image'
+                    }
+                    alt={product.name || 'Product'}
+                  />
 
-                  {stock <= 0 && (
-                    <span className="stock-overlay">Out of stock</span>
-                  )}
+                  {stock <= 0 && <span className="stock-overlay">Out of stock</span>}
                 </div>
 
                 <div className="product-body">
