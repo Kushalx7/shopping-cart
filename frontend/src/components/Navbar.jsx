@@ -4,9 +4,9 @@ import { getUser, imageSrc } from '../utils';
 
 function Navbar() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-
   const [user, setUser] = useState(getUser());
+
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const syncUser = () => setUser(getUser());
@@ -46,9 +46,11 @@ function Navbar() {
           {token && <NavLink to="/profile">Profile</NavLink>}
 
           {user?.role === 'admin' && <NavLink to="/admin">Admin</NavLink>}
+
           {user?.role === 'shop_owner' && (
             <NavLink to="/shop-owner">Seller</NavLink>
           )}
+
           {token && user?.role === 'user' && (
             <NavLink to="/user">Dashboard</NavLink>
           )}
@@ -60,6 +62,7 @@ function Navbar() {
               <Link className="btn btn-ghost" to="/login">
                 Login
               </Link>
+
               <Link className="btn btn-primary" to="/signup">
                 Create account
               </Link>
